@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Local",
+      "program": "${workspaceFolder}/build/main.js",
+      "runtimeArgs": ["--env-file=.env"],
+      "runtimeVersion": "21.3.0",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    }
+  ]
+}
