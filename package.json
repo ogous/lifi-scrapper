@@ -3,6 +3,11 @@
   "main": "src/main.ts",
   "version": "1.0.0",
   "license": "MIT",
+  "author": "Ogous Chan Ali <hi@ogous.dev>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ogous/lifi-scrapper"
+  },
   "scripts": {
     "dev": "tsx watch --env-file=.env src/main.ts",
     "start": "node build/main.js",
