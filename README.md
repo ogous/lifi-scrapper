@@ -36,4 +36,4 @@ Read [README.Docker.md](README.Docker.md) for details.
 
 ## How it can be improved?
 
-- Data queries can be optimized for bigger bulk of data instead of writing on every iteration of loop. This can be changed depending on block time, cron scheduling, events frequency, targetted block scan range and scan range limit
+- Data queries can be optimized for bigger bulk of data instead of writing on every iteration of loop. This can be changed depending on block time, cron scheduling, events frequency, targetted block scan range and scan range limit. [Check the PR](https://github.com/ogous/lifi-scrapper/pull/1)
