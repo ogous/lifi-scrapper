@@ -115,7 +115,9 @@ class ScrapingService {
           }),
         );
         await this.updateMetaData(
-          currentBatch[currentBatch.length - 1].lastScannedBlock,
+          currentBatch[currentBatch.length - 1].lastScannedBlock > blockNumber
+            ? blockNumber
+            : currentBatch[currentBatch.length - 1].lastScannedBlock,
         );
       }
     } catch (e) {
