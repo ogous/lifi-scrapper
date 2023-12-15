@@ -4,11 +4,16 @@ import { BlockTag } from "@ethersproject/abstract-provider";
 import { FeeCollectedEvent, FeeEventModel, MetaDataModel } from "./models";
 import type { Config } from "./config";
 import { CronJob } from "cron";
+import DB from "./db";
 
 class ScrapingService {
   private inProgress = false;
-
-  constructor(protected config: Config) {}
+  protected config;
+  protected db;
+  constructor({ config, db }: { config: Config; db: DB }) {
+    this.config = config;
+    this.db = db;
+  }
 
   private loadFeeCollectorEvents = (
     fromBlock: BlockTag,
@@ -79,6 +84,7 @@ class ScrapingService {
   }
 
   scrape = async () => {
+    let session;
     if (this.inProgress) {
       return console.log("SCRAPING IN PROGRES");
     }
@@ -90,6 +96,8 @@ class ScrapingService {
       const blockNumber = await this.getBlockNumber();
 
       while (blockNumber > lastScannedBlock) {
+        session = await this.db.startSession();
+        session.startTransaction();
         await this.handleEvents(lastScannedBlock);
 
         lastScannedBlock += 1 + this.config.limitQuickNodeInfuraAlchemy;
@@ -97,10 +105,12 @@ class ScrapingService {
         await this.updateMetaData(
           lastScannedBlock > blockNumber ? blockNumber : lastScannedBlock,
         );
+        await session.commitTransaction();
       }
     } catch (e) {
       console.error(e instanceof Error ? e.message : "Unknown error");
     } finally {
+      await session?.endSession();
       this.inProgress = false;
     }
   };
@@ -108,8 +118,8 @@ class ScrapingService {
 
 class SchedulerService extends ScrapingService {
   private readonly job: CronJob;
-  constructor({ config }: { config: Config }) {
-    super(config);
+  constructor({ config, db }: { config: Config; db: DB }) {
+    super({ config, db });
     this.job = new CronJob(this.config.CRON_SCHEDULE, this.scrape);
     process.on("SIGTERM", this.stop);
     process.on("beforeExit", this.stop);

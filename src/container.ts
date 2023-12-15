@@ -37,7 +37,7 @@ export async function createContainer(
 
   container.register({
     config: asValue(config),
-    db: asClass(DB),
+    db: asClass(DB).singleton(),
     router: asFunction(createRouter).singleton(),
     app: asFunction(createApp).singleton(),
     scheduler: asClass(SchedulerService).singleton(),
