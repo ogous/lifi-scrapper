@@ -66,6 +66,10 @@ class ScrapingService {
     ).exec();
   }
 
+  private insertEvents(batch: ReturnType<typeof this.parseFeeCollectorEvents>) {
+    return FeeEventModel.insertMany(batch);
+  }
+
   private async handleEvents(lastScannedBlock: number) {
     const events = await this.loadFeeCollectorEvents(
       lastScannedBlock + 1,
@@ -74,7 +78,7 @@ class ScrapingService {
 
     if (events.length > 0) {
       const parsedEvents = this.parseFeeCollectorEvents(events);
-      await FeeEventModel.insertMany(parsedEvents);
+      return parsedEvents;
     }
   }
 
@@ -89,13 +93,31 @@ class ScrapingService {
         metadata?.lastScannedBlock ?? this.config.minBlockNumber;
       const blockNumber = await this.getBlockNumber();
 
+      const batch = [];
       while (blockNumber > lastScannedBlock) {
-        await this.handleEvents(lastScannedBlock);
+        const events = await this.handleEvents(lastScannedBlock);
 
         lastScannedBlock += 1 + this.config.limitQuickNodeInfuraAlchemy;
+        if (events)
+          batch.push(...events.map((e) => ({ lastScannedBlock, ...e })));
+      }
+      const mongoBatchLimit = 100000;
 
+      while (batch.length > 0) {
+        const currentBatch = batch.splice(0, mongoBatchLimit);
+        await this.insertEvents(
+          currentBatch.map((e) => {
+            const event = Object.assign({}, e) as FeeCollectedEvent & {
+              lastScannedBlock?: number;
+            };
+            delete event.lastScannedBlock;
+            return event;
+          }),
+        );
         await this.updateMetaData(
-          lastScannedBlock > blockNumber ? blockNumber : lastScannedBlock,
+          currentBatch[currentBatch.length - 1].lastScannedBlock > blockNumber
+            ? blockNumber
+            : currentBatch[currentBatch.length - 1].lastScannedBlock,
         );
       }
     } catch (e) {
