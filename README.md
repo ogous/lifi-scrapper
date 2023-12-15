@@ -36,7 +36,7 @@ Read [README.Docker.md](README.Docker.md) for details.
 
 ## How it can be improved?
 
-- Data queries can be optimized for bigger bulk of data instead of writing on every iteration of loop. This can be changed depending on block time, cron scheduling, events frequency, targetted block scan range and scan range limit. [Check the PR](https://github.com/ogous/lifi-scrapper/pull/1)
+- Data queries can be optimized for bigger bulk of data instead of writing on every iteration of loop. This can be changed depending on block time, cron scheduling, events frequency, targetted block scan range and scan range limit. Implemented in [this PR](https://github.com/ogous/lifi-scrapper/pull/1)
 - Writing events, and managing last successfull operation (writing last scanned block) is open to errors, and data loss. Possible errors and process termination between two operation will result in duplicate events and unconsistant data. Possible optimizations:
-  - Using a [database transaction](https://www.mongodb.com/docs/manual/core/transactions/)
+  - Using a [database transaction](https://www.mongodb.com/docs/manual/core/transactions/). Implemented in [this PR](https://github.com/ogous/lifi-scrapper/pull/2)
   - Message brokers/Event Sourcing/Error Handling
